@@ -145,20 +145,13 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   $('cartTotal').textContent=money(rows.reduce((a,[k,v])=>a+v.qty*v.price,0));
  }
  function add(code){const product=catalog[code];if(!product)return;if(!stockLoaded){alert('Estamos consultando el inventario. Espera unos segundos e inténtalo nuevamente.');return;}if(!canAdd(code)){alert('Este producto no figura disponible en el inventario. Consulta por WhatsApp para confirmar reposición.');return;}const av=available(code);if((cart[code]?.qty||0)>=av){alert('No puedes agregar más unidades que el stock disponible.');return;}if(!cart[code])cart[code]={...product,qty:0};cart[code].qty++;render();}
- document.querySelectorAll('.add-to-cart').forEach(b=>b.addEventListener('click',()=>add(b.dataset.code)));
+ document.addEventListener('click',function(e){const b=e.target.closest('button.add-to-cart');if(!b)return;e.preventDefault();add(b.dataset.code);});
  $('openCart').addEventListener('click',()=>{$('cartBack').classList.add('open');render()});$('closeCart').addEventListener('click',()=>$('cartBack').classList.remove('open'));$('cartBack').addEventListener('click',e=>{if(e.target===$('cartBack'))$('cartBack').classList.remove('open')});
  $('cartItems').addEventListener('click',e=>{const b=e.target.closest('button[data-cart-action]');if(!b)return;const {code,cartAction}=b.dataset; if(cartAction==='remove')delete cart[code];else if(cartAction==='minus'){if(cart[code])cart[code].qty--;if(cart[code]&&cart[code].qty<=0)delete cart[code];}else if(cartAction==='plus'){add(code);return;}render();});
  $('checkoutCart').addEventListener('click',()=>{const rows=Object.entries(cart).filter(([k,v])=>v.qty>0);if(!rows.length){alert('Agrega al menos una canasta al carrito.');return;}if(!stockLoaded){alert('No se pudo confirmar el inventario. Intenta nuevamente en unos segundos.');return;}for(const [code,item] of rows){if(!canAdd(code)||item.qty>available(code)){alert('La disponibilidad cambió para '+item.name+'. Actualiza el inventario o consulta por WhatsApp.');return;}}
  const name=$('buyerName').value.trim(),phone=$('buyerPhone').value.trim(),city=$('buyerCity').value.trim();if(!name||!phone||!city){alert('Completa tu nombre, teléfono y distrito/ciudad de entrega.');return;}
- let msg='¡Hola, MACATEX PERÚ! 🎄 Quiero realizar este pedido:
-';rows.forEach(([code,item])=>msg+=`• ${item.name} x ${item.qty} = ${money(item.qty*item.price)}
-`);msg+=`Total referencial: ${$('cartTotal').textContent}
-Cliente: ${name}
-Teléfono: ${phone}
-Entrega: ${city}`;if($('buyerDate').value)msg+='
-Fecha deseada: '+$('buyerDate').value;if($('buyerNotes').value.trim())msg+='
-Observaciones: '+$('buyerNotes').value.trim();msg+='
-Por favor, confirmar stock, entrega y forma de pago. Este pedido queda pendiente de confirmación.';window.open('https://wa.me/51930523654?text='+encodeURIComponent(msg),'_blank','noopener');
+ let msg='¡Hola, MACATEX PERÚ! 🎄 Quiero realizar este pedido:\n';rows.forEach(([code,item])=>msg+=`• ${item.name} x ${item.qty} = ${money(item.qty*item.price)}
+`);msg+=`Total referencial: ${$('cartTotal').textContent}\nCliente: ${name}\nTeléfono: ${phone}\nEntrega: ${city}`;if($('buyerDate').value)msg+='\nFecha deseada: '+$('buyerDate').value;if($('buyerNotes').value.trim())msg+='\nObservaciones: '+$('buyerNotes').value.trim();msg+='\nPor favor, confirmar stock, entrega y forma de pago. Este pedido queda pendiente de confirmación.';window.open('https://wa.me/51930523654?text='+encodeURIComponent(msg),'_blank','noopener');
  });
  window.macatexRefreshStock=function(){const cb='macatexCartStockCallback';window[cb]=function(data){try{if(!Array.isArray(data))throw new Error('Respuesta inválida');stockByCode={};data.forEach(p=>{const code=String(p['Código']||p['Codigo']||'').trim();if(code)stockByCode[code]=p;});stockLoaded=true;document.querySelectorAll('.add-to-cart').forEach(b=>{const code=b.dataset.code;const st=statusName(code);const av=available(code);if(!canAdd(code)){b.disabled=true;b.textContent=st==='En reposición'?'Consultar próxima disponibilidad':st==='Agotado'?'Agotado · consultar reposición':'Disponibilidad por confirmar';b.style.opacity='.65';}else{b.disabled=false;b.textContent='🛒 Agregar al carrito';b.style.opacity='1';}});render();}catch(err){stockLoaded=false;console.warn('Inventario carrito:',err);}delete window[cb];};const sc=document.createElement('script');sc.src=API+'?callback='+cb+'&t='+Date.now();sc.onerror=()=>{stockLoaded=false;document.querySelectorAll('.add-to-cart').forEach(b=>{b.disabled=true;b.textContent='Inventario no disponible';});delete window[cb];};document.head.appendChild(sc);};
  window.macatexRefreshStock();

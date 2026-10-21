@@ -225,7 +225,7 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   document.querySelectorAll('.details-toggle').forEach(btn=>btn.addEventListener('click',()=>{
     const code=btn.dataset.detailsFor;const box=document.getElementById('details-'+code);if(!box)return;
     const opening=box.hidden;box.hidden=!opening;btn.setAttribute('aria-expanded',String(opening));btn.textContent=opening?'Ocultar productos ↑':'Ver productos incluidos ↓';
-    if(opening&&!box.dataset.loaded){loadDetails(code,box);box.dataset.loaded='1';}
+    if(opening&&!box.dataset.loaded){const inventoryCode=(map[code]&&map[code].inventoryCode)||code;loadDetails(inventoryCode,box);box.dataset.loaded='1';}
   }));
   loadCanastas();setInterval(loadCanastas,60000);
 })();

@@ -74,7 +74,7 @@
 <footer class="footer"><div class="wrap"><div class="footgrid"><div><h2>🎁 MACATEX PERÚ</h2><p>Regalos que comparten alegría.<br>Canastas navideñas para momentos especiales.</p></div><div><h3>Enlaces rápidos</h3><p><a href="#inicio">Inicio</a><br><a href="#catalogo">Canastas</a><a href="#polos">Polos cristianos</a><br><a href="#empresas">Empresas</a><br><a href="#preguntas">Preguntas frecuentes</a></p></div><div><h3>Contáctanos</h3><p><a href="#" class="waLink" data-phone="51939843420">WhatsApp +51 939 843 420</a><br><a href="#" class="waLink" data-phone="51930523654">WhatsApp +51 930 523 654</a><br>Lima y otras ciudades del Perú</p></div></div><div class="copyright">© 2026 MACATEX PERÚ. Todos los derechos reservados. Precios, contenido, stock y envíos deben confirmarse antes de pagar.</div></div></footer>
 <a href="#" class="float" id="float">☏ WhatsApp</a>
 <div class="modalback" id="cartBack" style="z-index:8"><div class="modal" style="width:min(650px,100%)"><div class="modalhead"><h2>🛒 Tu carrito MACATEX</h2><button id="closeCart" aria-label="Cerrar carrito" type="button">✕</button></div><p class="fine">Revisa cantidades y disponibilidad antes de enviar tu pedido. El envío final se realiza por WhatsApp.</p><div id="cartItems"></div><div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eee;margin-top:16px;padding-top:14px;font-size:20px;font-weight:bold"><span>Total</span><span id="cartTotal">S/ 0.00</span></div><div class="field"><label for="buyerName">Nombre del cliente</label><input id="buyerName" placeholder="Nombre y apellido"></div><div class="field"><label for="buyerPhone">Teléfono de contacto</label><input id="buyerPhone" inputmode="tel" placeholder="Tu número de contacto"></div><div class="field"><label for="buyerCity">Distrito o ciudad de entrega</label><input id="buyerCity" placeholder="Ej.: Lurín, Lima"></div><div class="field"><label for="buyerDate">Fecha deseada (opcional)</label><input id="buyerDate" type="date"></div><div class="field"><label for="buyerNotes">Observaciones (opcional)</label><textarea id="buyerNotes" placeholder="Referencia de entrega u otra consulta"></textarea></div><button class="btn green" id="checkoutCart" type="button">Enviar pedido por WhatsApp →</button><p class="fine">El pedido no se considera confirmado hasta que MACATEX confirme disponibilidad, entrega y condiciones. Esta versión consulta stock, pero aún no registra el pedido automáticamente en Google Sheets.</p></div></div>
-<div class="modalback" id="back"><div class="modal"><div class="modalhead"><h2 id="mtitle">Consultar canasta</h2><button id="close" aria-label="Cerrar">✕</button></div><p class="fine">Completa los datos. Se abrirá WhatsApp con un mensaje preparado; no se guardan datos en esta página.</p><form id="form"><div class="field"><label for="product">Canasta</label><select id="product"><option>Canasta Económica</option><option>Canasta Familiar</option><option>Canasta Premium</option><option>Canasta personalizada</option><option>Cotización empresarial</option><option>Consulta general</option></select></div><div class="field"><label for="qty">Cantidad</label><select id="qty"><option>1</option><option>2 a 5</option><option>6 a 10</option><option>11 a 25</option><option>Más de 25</option></select></div><div class="field"><label for="city">Distrito o ciudad de entrega</label><input id="city" placeholder="Ej.: Chorrillos, Lima" required></div><div class="field"><label for="date">Fecha deseada (opcional)</label><input id="date" type="date"></div><div class="field"><label for="extra">Comentario (opcional)</label><textarea id="extra" placeholder="Presupuesto, personalización o consulta"></textarea></div><div class="field"><label for="phone">Enviar consulta a</label><select id="phone"><option value="51939843420">+51 939 843 420</option><option value="51930523654">+51 930 523 654</option></select></div><button class="btn green" type="submit">Abrir WhatsApp →</button><p class="fine">Revisa el mensaje y presiona Enviar en WhatsApp.</p></form></div></div>
+<div class="modalback" id="back"><div class="modal"><div class="modalhead"><h2 id="mtitle">Consultar canasta</h2><button id="close" aria-label="Cerrar">✕</button></div><p class="fine">Completa los datos. Se abrirá WhatsApp con un mensaje preparado; no se guardan datos en esta página.</p><form id="form"><div class="field"><label for="product">Canasta</label><select id="product"><option>Canasta Económica</option><option>Canasta Familiar</option><option>Canasta Premium</option><option>Básica Especial</option><option>Económica Plus</option><option>Especial Sayón</option><option>Celebración</option><option>Canasta organizadora</option><option>Cesto Tulipán</option><option>Familiar MUNAY</option><option>Premium organizadora</option><option>Cesto con ruedas</option><option>Grande Urpi</option><option>Premium Urpi N.° 70</option><option>Premium Khipu / Ratán</option><option>Canasta personalizada</option><option>Cotización empresarial</option><option>Consulta general</option></select></div><div class="field"><label for="qty">Cantidad</label><select id="qty"><option>1</option><option>2 a 5</option><option>6 a 10</option><option>11 a 25</option><option>Más de 25</option></select></div><div class="field"><label for="city">Distrito o ciudad de entrega</label><input id="city" placeholder="Ej.: Chorrillos, Lima" required></div><div class="field"><label for="date">Fecha deseada (opcional)</label><input id="date" type="date"></div><div class="field"><label for="extra">Comentario (opcional)</label><textarea id="extra" placeholder="Presupuesto, personalización o consulta"></textarea></div><div class="field"><label for="phone">Enviar consulta a</label><select id="phone"><option value="51939843420">+51 939 843 420</option><option value="51930523654">+51 930 523 654</option></select></div><button class="btn green" type="submit">Abrir WhatsApp →</button><p class="fine">Revisa el mensaje y presiona Enviar en WhatsApp.</p></form></div></div>
 <script>
 const back=document.getElementById('back');function openForm(p='Consulta general'){document.getElementById('product').value=p;back.classList.add('open')}function closeForm(){back.classList.remove('open')}
 document.querySelectorAll('.order').forEach(b=>b.onclick=()=>openForm(b.dataset.product));const customButton=document.getElementById('custom');if(customButton)customButton.onclick=()=>openForm('Consulta general');const volumeButton=document.getElementById('businessQuoteCatalog');if(volumeButton)volumeButton.onclick=()=>{openForm('Cotización empresarial');document.getElementById('qty').value='11 a 25';document.getElementById('extra').value='Cotización por volumen de modelos predeterminados. Indicar cantidad por modelo.'};document.getElementById('businessQuote').onclick=()=>{openForm('Cotización empresarial');document.getElementById('qty').value='11 a 25';document.getElementById('extra').value='Cotización para empresa. Indicar presupuesto por unidad y cantidad definitiva.'};document.getElementById('cta').onclick=()=>openForm();document.getElementById('float').onclick=e=>{e.preventDefault();openForm()};document.getElementById('close').onclick=closeForm;back.onclick=e=>{if(e.target===back)closeForm()};document.querySelectorAll('.waLink').forEach(a=>a.onclick=e=>{e.preventDefault();openForm();document.getElementById('phone').value=a.dataset.phone});
@@ -136,9 +136,21 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
 (function(){
  const API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL4hmtI1ZEerais9iQiG7cKMepm7rlxHhgDwG4c6QB1NmvHv5SqehLjbcg/exec';
  const catalog = {
-  'MAC-001': {name:'Canasta Económica', price:85},
-  'MAC-002': {name:'Canasta Familiar', price:145},
-  'MAC-003': {name:'Canasta Premium', price:250}
+   'MAC-001': {name:'Canasta Económica', price:85},
+   'MAC-002': {name:'Canasta Familiar', price:145},
+   'MAC-003': {name:'Canasta Premium', price:250},
+   'MAC-004': {name:'Básica Especial', price:47},
+   'MAC-005': {name:'Económica Plus', price:52},
+   'MAC-006': {name:'Especial Sayón', price:66},
+   'MAC-007': {name:'Celebración', price:70},
+   'MAC-008': {name:'Canasta organizadora', price:105},
+   'MAC-009': {name:'Cesto Tulipán', price:123},
+   'MAC-010': {name:'Familiar MUNAY', price:155},
+   'MAC-011': {name:'Premium organizadora', price:170},
+   'MAC-012': {name:'Cesto con ruedas', price:200},
+   'MAC-013': {name:'Grande Urpi', price:350},
+   'MAC-014': {name:'Premium Urpi N.° 70', price:400},
+   'MAC-015': {name:'Premium Khipu / Ratán', price:450}
  };
  const cart = {};
  window.macatexSetLivePrice = function(code, price, name){const p=catalog[code];if(!p)return;const value=Number(price);if(!Number.isFinite(value)||value<=0)return;p.price=value;if(name)p.name=String(name);if(cart[code]){cart[code].price=value;cart[code].name=p.name;}if(typeof render==='function')render();};
@@ -168,7 +180,7 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
  let msg='¡Hola, MACATEX PERÚ! 🎄 Quiero realizar este pedido:\n';rows.forEach(([code,item])=>msg+=`• ${item.name} x ${item.qty} = ${money(item.qty*item.price)}
 `);msg+=`Total referencial: ${$('cartTotal').textContent}\nCliente: ${name}\nTeléfono: ${phone}\nEntrega: ${city}`;if($('buyerDate').value)msg+='\nFecha deseada: '+$('buyerDate').value;if($('buyerNotes').value.trim())msg+='\nObservaciones: '+$('buyerNotes').value.trim();msg+='\nPor favor, confirmar stock, entrega y forma de pago. Este pedido queda pendiente de confirmación.';window.open('https://wa.me/51939843420?text='+encodeURIComponent(msg),'_blank','noopener');
  });
- window.macatexRefreshStock=function(){const cb='macatexCartStockCallback';window[cb]=function(data){try{if(!Array.isArray(data))throw new Error('Respuesta inválida');stockByCode={};data.forEach(p=>{const code=String(p['Código']||p['Codigo']||'').trim();if(code)stockByCode[code]=p;});stockLoaded=true;document.querySelectorAll('.add-to-cart').forEach(b=>{const code=b.dataset.code;const st=statusName(code);const av=available(code);if(!canAdd(code)){b.disabled=true;b.textContent=st==='En reposición'?'Consultar próxima disponibilidad':st==='Agotado'?'Agotado · consultar reposición':'Disponibilidad por confirmar';b.style.opacity='.65';}else{b.disabled=false;b.textContent='🛒 Agregar al carrito';b.style.opacity='1';}});render();}catch(err){stockLoaded=false;console.warn('Inventario carrito:',err);}delete window[cb];};const sc=document.createElement('script');sc.src=API+'?callback='+cb+'&t='+Date.now();sc.onerror=()=>{stockLoaded=false;document.querySelectorAll('.add-to-cart').forEach(b=>{b.disabled=true;b.textContent='Inventario no disponible';});delete window[cb];};document.head.appendChild(sc);};
+ window.macatexRefreshStock=function(){const cb='macatexCartStockCallback';window[cb]=function(data){try{if(!Array.isArray(data))throw new Error('Respuesta inválida');stockByCode={};data.forEach(p=>{const code=String(p['Código']||p['Codigo']||'').trim();if(code)stockByCode[code]=p;});stockLoaded=true;document.querySelectorAll('.add-to-cart').forEach(b=>{const code=b.dataset.code;const st=statusName(code);const av=available(code);if(!canAdd(code)){b.disabled=true;b.textContent=st==='En reposición'?'Consultar próxima disponibilidad':st==='Agotado'?'Agotado · consultar reposición':'Disponibilidad por confirmar';b.style.opacity='.65';}else{b.disabled=false;b.textContent='🛒 Agregar al carrito';b.style.opacity='1';}const card=b.closest('.card');const badge=card&&card.querySelector('[data-stock-for]');if(badge){badge.textContent=st||'Disponibilidad por confirmar';badge.className='stock-status '+(st==='Disponible'?'available':st==='Últimas unidades'?'low':st==='Agotado'?'soldout':st==='En reposición'?'restock':'paused');}});render();}catch(err){stockLoaded=false;console.warn('Inventario carrito:',err);}delete window[cb];};const sc=document.createElement('script');sc.src=API+'?callback='+cb+'&t='+Date.now();sc.onerror=()=>{stockLoaded=false;document.querySelectorAll('.add-to-cart').forEach(b=>{b.disabled=true;b.textContent='Inventario no disponible';});delete window[cb];};document.head.appendChild(sc);};
  window.macatexRefreshStock();
 })();
 </script>
@@ -188,7 +200,19 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   const map={
     'CAN-001':{inventoryCode:'MAC-001',fallbackName:'Canasta Económica'},
     'CAN-002':{inventoryCode:'MAC-002',fallbackName:'Canasta Familiar'},
-    'CAN-003':{inventoryCode:'MAC-003',fallbackName:'Canasta Premium'}
+    'CAN-003':{inventoryCode:'MAC-003',fallbackName:'Canasta Premium'},
+    'CAN-004':{inventoryCode:'MAC-004',fallbackName:'Básica Especial'},
+    'CAN-005':{inventoryCode:'MAC-005',fallbackName:'Económica Plus'},
+    'CAN-006':{inventoryCode:'MAC-006',fallbackName:'Especial Sayón'},
+    'CAN-007':{inventoryCode:'MAC-007',fallbackName:'Celebración'},
+    'CAN-008':{inventoryCode:'MAC-008',fallbackName:'Canasta organizadora'},
+    'CAN-009':{inventoryCode:'MAC-009',fallbackName:'Cesto Tulipán'},
+    'CAN-010':{inventoryCode:'MAC-010',fallbackName:'Familiar MUNAY'},
+    'CAN-011':{inventoryCode:'MAC-011',fallbackName:'Premium organizadora'},
+    'CAN-012':{inventoryCode:'MAC-012',fallbackName:'Cesto con ruedas'},
+    'CAN-013':{inventoryCode:'MAC-013',fallbackName:'Grande Urpi'},
+    'CAN-014':{inventoryCode:'MAC-014',fallbackName:'Premium Urpi N.° 70'},
+    'CAN-015':{inventoryCode:'MAC-015',fallbackName:'Premium Khipu / Ratán'}
   };
   const money=n=>'S/ '+Number(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -203,8 +227,47 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
     document.head.appendChild(script);
     setTimeout(()=>{if(finished)return;finished=true;cleanup();done(new Error('Tiempo de espera agotado'))},12000);
   }
+  let addedDynamicCard=false;
+  function makeAdditionalCard(c,ui){
+    const code=String(c.codigoCanasta||'');
+    if(!/^CAN-00[4-9]$|^CAN-01[0-5]$/.test(code))return;
+    if(document.querySelector('[data-dynamic-canasta="'+code+'"]'))return;
+    const inventoryCode=ui.inventoryCode;
+    const title=esc(c.nombre||ui.fallbackName);
+    const image=esc(c.imagen||'');
+    const price=Number(c.precioVigente||catalog[inventoryCode]?.price||0);
+    const card=document.createElement('article');
+    card.className='card';
+    card.dataset.dynamicCanasta=code;
+    card.innerHTML=
+      '<img src="'+image+'" alt="'+title+'" loading="lazy" onerror="this.style.display=\'none\'">'+
+      '<div class="content">'+
+      '<span class="tag" style="background:var(--g)">'+title+'</span>'+
+      '<h3>'+title+'</h3>'+
+      '<p>Canasta navideña MACATEX. Consulta el contenido y la disponibilidad antes de confirmar tu pedido.</p>'+
+      '<div class="price" data-price-for="'+inventoryCode+'">'+money(price)+'</div>'+
+      '<div class="promo-box" data-promo-for="'+inventoryCode+'" aria-live="polite"></div>'+
+      '<button class="details-toggle" type="button" data-details-for="'+code+'" aria-expanded="false">Ver productos incluidos ↓</button>'+
+      '<div class="basket-details" id="details-'+code+'" hidden></div>'+
+      '<span class="stock-status" data-stock-for="'+inventoryCode+'">Consultando disponibilidad…</span>'+
+      '<span class="note">Contenido y stock por confirmar.</span>'+
+      '<button class="btn green add-to-cart" data-code="'+inventoryCode+'" data-name="'+title+'" data-price="'+price+'" type="button">🛒 Agregar al carrito</button>'+
+      '<div class="product-quantity" data-quantity-for="'+inventoryCode+'">En tu pedido: <strong>0</strong> unidades</div>'+
+      '<button class="btn green order" data-product="'+title+'">Consultar por WhatsApp →</button>'+
+      '</div>';
+    const orderButton=card.querySelector('.order');
+    if(orderButton)orderButton.addEventListener('click',()=>{
+      const productSelect=document.getElementById('product');
+      const modal=document.getElementById('back');
+      if(productSelect)productSelect.value=c.nombre||ui.fallbackName;
+      if(modal)modal.classList.add('open');
+    });
+    const cards=document.querySelector('#catalogo .cards');
+    if(cards){cards.appendChild(card);addedDynamicCard=true;}
+  }
   function updateCanasta(c){
     const ui=map[c.codigoCanasta];if(!ui)return;
+    if(!['CAN-001','CAN-002','CAN-003'].includes(c.codigoCanasta))makeAdditionalCard(c,ui);
     canastas[c.codigoCanasta]=c;
     const price=document.querySelector('[data-price-for="'+ui.inventoryCode+'"]');
     if(price){price.textContent=money(c.precioVigente);if(c.promocionVigente&&Number(c.precioRegular)>Number(c.precioVigente)){price.innerHTML=money(c.precioVigente)+' <span class="old-price">'+money(c.precioRegular)+'</span>';}}
@@ -221,6 +284,10 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   function loadCanastas(){jsonp({tipo:'canastas'},(err,data)=>{
     if(err||!Array.isArray(data)){console.warn('MACATEX precios en vivo:',err||'Respuesta inválida');return;}
     data.forEach(updateCanasta);
+    if(addedDynamicCard&&window.macatexRefreshStock){
+      window.macatexRefreshStock();
+      addedDynamicCard=false;
+    }
   });}
   function loadDetails(code,box){
     box.innerHTML='<span class="detail-note">Consultando productos incluidos…</span>';
@@ -230,11 +297,12 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
       box.innerHTML='<strong>Productos incluidos</strong><ul>'+data.map(p=>'<li>'+esc(p.nombre)+(p.marca?' · '+esc(p.marca):'')+(p.presentacion?' · '+esc(p.presentacion):'')+(p.cantidad?' — '+esc(p.cantidad)+' ud.':'')+'</li>').join('')+'</ul><span class="detail-note">El contenido está sujeto a disponibilidad. Cualquier sustitución se consultará previamente.</span>';
     });
   }
-  document.querySelectorAll('.details-toggle').forEach(btn=>btn.addEventListener('click',()=>{
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('button.details-toggle');if(!btn)return;
     const code=btn.dataset.detailsFor;const box=document.getElementById('details-'+code);if(!box)return;
     const opening=box.hidden;box.hidden=!opening;btn.setAttribute('aria-expanded',String(opening));btn.textContent=opening?'Ocultar productos ↑':'Ver productos incluidos ↓';
     if(opening&&!box.dataset.loaded){const inventoryCode=(map[code]&&map[code].inventoryCode)||code;loadDetails(inventoryCode,box);box.dataset.loaded='1';}
-  }));
+  });
   loadCanastas();setInterval(loadCanastas,60000);
 })();
 </script>

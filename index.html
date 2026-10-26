@@ -127,11 +127,23 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
 .cart-empty{padding:18px;background:#fff8ee;border-radius:12px;color:#665}
 .add-to-cart{margin-top:14px;width:100%}
 .product-quantity{margin:8px 0 12px;padding:9px 12px;background:#f5f7f6;border-radius:9px;text-align:center;color:#245342;font-size:14px}
-#cartToast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#075b40;color:white;padding:13px 20px;border-radius:12px;box-shadow:0 8px 30px #0003;z-index:99;opacity:0;pointer-events:none;transition:.2s;font-weight:700;text-align:center;max-width:90vw}
+#cartToast{position:fixed;left:50%;bottom:108px;transform:translate(-50%,20px);background:#075b40;color:white;padding:13px 20px;border-radius:12px;box-shadow:0 8px 30px #0003;z-index:99;opacity:0;pointer-events:none;transition:.2s;font-weight:700;text-align:center;max-width:90vw}
 #cartToast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:500px){#cartItems .cart-row{grid-template-columns:1fr}.modal{padding:17px}}
+#floatingCart{position:fixed;right:24px;bottom:22px;z-index:120;display:flex;align-items:center;gap:12px;min-width:260px;max-width:calc(100vw - 28px);padding:13px 17px;border:0;border-radius:18px;background:#075b40;color:#fff;box-shadow:0 8px 28px #0003;cursor:pointer;text-align:left;font:inherit}
+#floatingCart:hover{background:#064b35;transform:translateY(-1px)}
+#floatingCart .floating-cart-icon{font-size:27px;line-height:1}
+#floatingCart .floating-cart-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+#floatingCart .floating-cart-copy strong{font-size:16px}
+#floatingCart .floating-cart-copy small{font-size:12px;opacity:.95}
+#floatingCart .floating-cart-cta{font-size:13px;font-weight:800;white-space:nowrap;background:#fff;color:#075b40;padding:9px 11px;border-radius:10px}
+@media(max-width:500px){#cartItems .cart-row{grid-template-columns:1fr}.modal{padding:17px}#floatingCart{right:10px;left:10px;bottom:10px;width:calc(100% - 20px);max-width:none;min-width:0;border-radius:15px;padding:12px 14px;box-shadow:0 5px 22px #0004}#floatingCart .floating-cart-icon{font-size:25px}#floatingCart .floating-cart-copy strong{font-size:15px}#floatingCart .floating-cart-copy small{font-size:12px}#floatingCart .floating-cart-cta{padding:9px 10px}#cartToast{bottom:82px}}
 </style>
 <div id="cartToast" role="status" aria-live="polite"></div>
+<button id="floatingCart" type="button" aria-label="Abrir carrito de compras">
+  <span class="floating-cart-icon" aria-hidden="true">🛒</span>
+  <span class="floating-cart-copy"><strong>Mi carrito</strong><small><span id="floatingCartCount">0</span> unidades · <span id="floatingCartTotal">S/ 0.00</span></small></span>
+  <span class="floating-cart-cta">Ver pedido →</span>
+</button>
 <script>
 (function(){
  const API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL4hmtI1ZEerais9iQiG7cKMepm7rlxHhgDwG4c6QB1NmvHv5SqehLjbcg/exec';
@@ -177,17 +189,17 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
     return n===null || n>0;
   }
  function render(){
-  const count=Object.values(cart).reduce((a,x)=>a+x.qty,0); $('cartCount').textContent=count;
+  const count=Object.values(cart).reduce((a,x)=>a+x.qty,0); $('cartCount').textContent=count; $('floatingCartCount').textContent=count;
   document.querySelectorAll('[data-quantity-for]').forEach(el=>{const code=el.dataset.quantityFor;el.innerHTML='En tu pedido: <strong>'+(cart[code]?.qty||0)+'</strong> unidades';});
   const rows=Object.entries(cart).filter(([k,v])=>v.qty>0);
   if(!rows.length){$('cartItems').innerHTML='<div class="cart-empty">Tu carrito está vacío. Agrega una canasta para comenzar.</div>';}
   else {$('cartItems').innerHTML=rows.map(([code,item])=>{const av=available(code);return `<div class="cart-row"><div><strong>${item.name}</strong><div class="fine">${money(item.price)} por unidad · ${av===null?'Stock por confirmar':`Disponible: ${av}`}</div></div><div class="cart-controls"><button type="button" data-cart-action="minus" data-code="${code}">−</button><b>${item.qty}</b><button type="button" data-cart-action="plus" data-code="${code}">+</button><button type="button" data-cart-action="remove" data-code="${code}">Eliminar</button><b>${money(item.qty*item.price)}</b></div></div>`}).join('');}
-  $('cartTotal').textContent=money(rows.reduce((a,[k,v])=>a+v.qty*v.price,0));
+  const total=rows.reduce((a,[k,v])=>a+v.qty*v.price,0); $('cartTotal').textContent=money(total); $('floatingCartTotal').textContent=money(total);
  }
  function toast(message){const el=$('cartToast');el.textContent=message;el.classList.add('show');clearTimeout(window.macatexToastTimer);window.macatexToastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
  function add(code){const product=catalog[code];if(!product)return;if(!stockLoaded){alert('Estamos consultando el inventario. Espera unos segundos e inténtalo nuevamente.');return;}if(!canAdd(code)){alert('Este producto no figura disponible en el inventario. Consulta por WhatsApp para confirmar reposición.');return;}const av=available(code);if(av!==null && (cart[code]?.qty||0)>=av){alert('No puedes agregar más unidades que el stock disponible.');return;}if(!cart[code])cart[code]={...product,qty:0};cart[code].qty++;render();toast('✓ '+product.name+' agregada al pedido. Cantidad: '+cart[code].qty);}
  document.addEventListener('click',function(e){const b=e.target.closest('button.add-to-cart');if(!b)return;e.preventDefault();add(b.dataset.code);});
- $('openCart').addEventListener('click',()=>{$('cartBack').classList.add('open');render()});$('closeCart').addEventListener('click',()=>$('cartBack').classList.remove('open'));$('cartBack').addEventListener('click',e=>{if(e.target===$('cartBack'))$('cartBack').classList.remove('open')});
+ const openCartPanel=()=>{$('cartBack').classList.add('open');render()}; $('openCart').addEventListener('click',openCartPanel); $('floatingCart').addEventListener('click',openCartPanel);$('closeCart').addEventListener('click',()=>$('cartBack').classList.remove('open'));$('cartBack').addEventListener('click',e=>{if(e.target===$('cartBack'))$('cartBack').classList.remove('open')});
  $('cartItems').addEventListener('click',e=>{const b=e.target.closest('button[data-cart-action]');if(!b)return;const {code,cartAction}=b.dataset; if(cartAction==='remove')delete cart[code];else if(cartAction==='minus'){if(cart[code])cart[code].qty--;if(cart[code]&&cart[code].qty<=0)delete cart[code];}else if(cartAction==='plus'){add(code);return;}render();});
  $('checkoutCart').addEventListener('click',()=>{const rows=Object.entries(cart).filter(([k,v])=>v.qty>0);if(!rows.length){alert('Agrega al menos una canasta al carrito.');return;}if(!stockLoaded){alert('No se pudo confirmar el inventario. Intenta nuevamente en unos segundos.');return;}for(const [code,item] of rows){const av=available(code);if(!canAdd(code)||av===null||item.qty>av){alert('La disponibilidad de '+item.name+' aún debe confirmarse en el inventario. Puedes consultar por WhatsApp o intentar nuevamente cuando se actualice el stock.');return;}}
  const name=$('buyerName').value.trim(),phone=$('buyerPhone').value.trim(),city=$('buyerCity').value.trim();if(!name||!phone||!city){alert('Completa tu nombre, teléfono y distrito/ciudad de entrega.');return;}

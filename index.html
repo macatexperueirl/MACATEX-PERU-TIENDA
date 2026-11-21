@@ -15,7 +15,7 @@
 @media(max-width:600px){.details-toggle{font-size:15px;padding:11px 13px}.basket-details{padding:12px;font-size:14px}.basket-details li{font-size:14px}}
 </style></head><body>
 <div class="top">🎄 NAVIDAD 2026 · Regalos que comparten alegría · Pedidos por WhatsApp</div>
-<header class="wrap head"><a class="logo" href="#inicio">🎁 MACATEX<small>PERÚ · REGALOS QUE COMPARTEN ALEGRÍA</small></a><nav class="nav"><a href="#inicio">Inicio</a><a href="#catalogo">Canastas</a><a href="#campana-navidad">Anuncio navideño</a><a href="#polos">Polos cristianos</a><a href="#empresas">Empresas</a><a href="#nosotros">Nosotros</a><a href="#preguntas">Preguntas frecuentes</a><a href="#contacto">Contacto</a></nav><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:12px">🟢 +51 939 843 420 · +51 930 523 654</b></div></header>
+<header class="wrap head"><a class="logo" href="#inicio">🎁 MACATEX<small>PERÚ · REGALOS QUE COMPARTEN ALEGRÍA</small></a><nav class="nav"><a href="#inicio">Inicio</a><a href="#rifaNavidad">Rifa navideña</a><a href="#catalogo">Canastas</a><a href="#campana-navidad">Anuncio navideño</a><a href="#polos">Polos cristianos</a><a href="#empresas">Empresas</a><a href="#nosotros">Nosotros</a><a href="#preguntas">Preguntas frecuentes</a><a href="#contacto">Contacto</a></nav><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:12px">🟢 +51 939 843 420 · +51 930 523 654</b></div></header>
 <section class="hero" id="inicio">
 <div class="wrap heroCopy">
 <b style="color:var(--g);letter-spacing:2px;font-size:12px">EDICIÓN ESPECIAL · NAVIDAD 2026</b>
@@ -333,5 +333,69 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   loadCanastas();setInterval(loadCanastas,60000);
 })();
 </script>
+
+
+<section class="section" id="rifaNavidad" style="background:#fff8ee">
+ <div class="wrap">
+  <div class="center">
+   <b style="color:var(--r);letter-spacing:2px">EDICIÓN ESPECIAL · NAVIDAD 2026</b>
+   <h2>🎄 Gran Rifa Navideña MACATEXPERU</h2>
+   <p>¡3 premios, 3 ganadores! Elige tu número del 001 al 300. Cada número cuesta <strong>S/10</strong>.</p>
+  </div>
+  <div class="rifa-prizes">
+   <div><b>🥇 1.er premio</b><span>Súper Canasta Navideña CAN-015 Selección Especial · valorizada en S/450</span></div>
+   <div><b>🥈 2.º premio</b><span>Juego de ollas Record</span></div>
+   <div><b>🥉 3.er premio</b><span>Mini licuadora portátil Oster</span></div>
+  </div>
+  <div class="rifa-meta"><strong>Sorteo: domingo 27 de diciembre de 2026 · 8:00 p. m.</strong><span>Transmisión por Facebook Live: MACATEXPERU · Recojo presencial en Santa Anita</span></div>
+  <div class="rifa-legend">
+   <span><i class="available"></i> Disponible: <b id="rifaAvailable">0</b></span>
+   <span><i class="reserved"></i> Reservado: <b id="rifaReserved">0</b></span>
+   <span><i class="sold"></i> Vendido: <b id="rifaSold">0</b></span>
+   <button class="btn green" id="rifaRefresh" type="button">Actualizar números ↻</button>
+  </div>
+  <div id="rifaGrid" class="rifa-grid" aria-label="Números de la rifa del 001 al 300"></div>
+  <div class="rifa-form-wrap">
+   <div><h3>Solicita tu número</h3><p>Número seleccionado: <strong id="rifaSelected">Ninguno</strong></p>
+    <p class="rifa-payment">Yape: <strong>930 523 654</strong><br>Importe: <strong>S/10 por número</strong><br>Plazo de reserva: <strong>30 minutos</strong></p>
+    <p class="fine">La venta se confirma únicamente después de validar el pago. Si no se registra el pago dentro de 30 minutos, el número volverá a estar disponible.</p>
+   </div>
+   <form id="rifaForm">
+    <input type="hidden" id="rifaNumber" name="numero">
+    <label>Nombre completo<input id="rifaName" required maxlength="100" autocomplete="name" placeholder="Tu nombre"></label>
+    <label>WhatsApp<input id="rifaPhone" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="Tu número de WhatsApp"></label>
+    <button class="btn red" id="rifaSubmit" type="submit">Solicitar reserva por S/10</button>
+    <p id="rifaStatus" class="fine" role="status">Selecciona un número disponible para comenzar.</p>
+   </form>
+  </div>
+  <p class="fine" style="text-align:center;margin-top:20px">Actividad sujeta a la validación de las bases y autorizaciones que correspondan. La disponibilidad mostrada se actualiza periódicamente.</p>
+ </div>
+</section>
+<style>
+#rifaNavidad .rifa-prizes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+#rifaNavidad .rifa-prizes div{padding:16px;background:#fff;border:1px solid #ead7bd;border-radius:14px;display:grid;gap:8px}
+#rifaNavidad .rifa-prizes b{color:var(--r)}#rifaNavidad .rifa-prizes span{font-size:14px;line-height:1.5}
+#rifaNavidad .rifa-meta{text-align:center;background:#075a3e;color:#fff;padding:16px;border-radius:14px;display:grid;gap:6px}
+#rifaNavidad .rifa-legend{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin:22px 0}
+#rifaNavidad .rifa-legend span{display:flex;align-items:center;gap:6px;font-size:13px}
+#rifaNavidad .rifa-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+#rifaNavidad .available{background:#e7f6eb;border:1px solid #24934b}
+#rifaNavidad .reserved{background:#fff2cf;border:1px solid #c58b12}
+#rifaNavidad .sold{background:#f5dddd;border:1px solid #b5162c}
+#rifaNavidad .rifa-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:7px}
+#rifaNavidad .rifa-number{padding:10px 2px;border:1px solid #24934b;border-radius:8px;background:#e7f6eb;color:#14532d;font-weight:800;cursor:pointer}
+#rifaNavidad .rifa-number.reservado{background:#fff2cf;border-color:#c58b12;color:#805600;cursor:not-allowed}
+#rifaNavidad .rifa-number.vendido{background:#f5dddd;border-color:#b5162c;color:#8a1726;cursor:not-allowed}
+#rifaNavidad .rifa-number.selected{outline:3px solid #1e3a8a;outline-offset:1px}
+#rifaNavidad .rifa-number:disabled{opacity:.8}
+#rifaNavidad .rifa-form-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;padding:24px;background:#fff;border:1px solid #ead7bd;border-radius:16px}
+#rifaNavidad .rifa-payment{background:#fff8ee;padding:14px;border-radius:10px;line-height:1.8}
+#rifaNavidad #rifaForm{display:grid;gap:12px}
+#rifaNavidad #rifaForm label{display:grid;gap:6px;font-size:13px;font-weight:700}
+#rifaNavidad #rifaForm input{width:100%;padding:12px;border:1px solid #ddd;border-radius:9px;font:inherit}
+@media(max-width:650px){#rifaNavidad .rifa-prizes{grid-template-columns:1fr}#rifaNavidad .rifa-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}#rifaNavidad .rifa-number{padding:9px 1px;font-size:12px}#rifaNavidad .rifa-form-wrap{grid-template-columns:1fr;padding:16px}}
+</style>
+<iframe name="rifaPostFrame" id="rifaPostFrame" title="Envío de reserva de rifa" style="display:none"></iframe>
+<script src="rifa-navidad.js" defer></script>
 
 </body></html>

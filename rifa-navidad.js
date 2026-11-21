@@ -101,7 +101,7 @@
     }
     const name = document.getElementById('rifaName').value.trim();
     const phone = document.getElementById('rifaPhone').value.trim();
-    if (name.length < 2 || phone.replace(/\\D/g, '').length < 9) {
+    if (name.length < 2 || phone.replace(/\D/g, '').length < 9) {
       statusText.textContent = 'Revisa tu nombre y número de WhatsApp.';
       return;
     }

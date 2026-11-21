@@ -31,6 +31,34 @@
 <div>🏢 Pedidos por volumen<span>Familias y empresas</span></div>
 </div>
 </section>
+<section class="rifa-home-promo" id="rifaPromoHome" aria-label="Promoción de la Gran Rifa Navideña">
+ <div class="wrap rifa-home-inner">
+  <div class="rifa-home-art"><img src="rifa-navidad-ticket.png" alt="Ticket de la Gran Rifa Navideña MACATEXPERU 2026" loading="lazy"></div>
+  <div class="rifa-home-copy">
+   <span class="rifa-home-kicker">EDICIÓN ESPECIAL · NAVIDAD 2026</span>
+   <h2>🎄 ¡Gran Rifa Navideña MACATEXPERU!</h2>
+   <p class="rifa-home-lead">¡3 premios, 3 ganadores! Participa y celebra esta Navidad con nosotros.</p>
+   <div class="rifa-home-facts"><span><b>S/10</b> por número</span><span><b>300</b> números disponibles</span><span><b>27 DIC</b> · 8:00 p. m.</span></div>
+   <a class="btn red rifa-home-cta" href="#rifaNavidad">VER NÚMEROS DISPONIBLES <span aria-hidden="true">→</span></a>
+   <small>Elige tu número y revisa las condiciones de participación.</small>
+  </div>
+ </div>
+</section>
+<style>
+.rifa-home-promo{padding:28px 0;background:linear-gradient(115deg,#fff4df 0%,#fff 48%,#edf6ed 100%);border-top:1px solid #f0dfc6;border-bottom:1px solid #eadcc9}
+.rifa-home-inner{display:grid;grid-template-columns:minmax(220px,.78fr) 1.22fr;align-items:center;gap:clamp(20px,4vw,48px);max-width:1000px}
+.rifa-home-art{background:#fff;border-radius:16px;padding:8px;box-shadow:0 8px 24px #321b1b18}
+.rifa-home-art img{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:10px}
+.rifa-home-copy h2{margin:8px 0;color:#075a3e;font-size:clamp(24px,3vw,36px);line-height:1.12}
+.rifa-home-kicker{color:#b5162c;font-size:11px;letter-spacing:1.6px;font-weight:800}
+.rifa-home-lead{color:#555;line-height:1.5;margin:8px 0 14px}
+.rifa-home-facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.rifa-home-facts span{background:#fff;border:1px solid #ead7bd;border-radius:30px;padding:8px 12px;font-size:13px;color:#333}
+.rifa-home-facts b{color:#b5162c}
+.rifa-home-cta{display:inline-flex;align-items:center;gap:10px;justify-content:center}
+.rifa-home-copy small{display:block;color:#777;font-size:11px;margin-top:9px}
+@media(max-width:650px){.rifa-home-promo{padding:20px 0}.rifa-home-inner{grid-template-columns:1fr;gap:14px}.rifa-home-art{max-width:280px;margin:auto}.rifa-home-art img{max-height:230px}.rifa-home-copy{text-align:center}.rifa-home-facts{justify-content:center}.rifa-home-cta{width:100%}}
+</style>
 <section class="section catalogIntro" id="catalogo"><div class="wrap"><div class="center"><b style="color:var(--g);letter-spacing:2px">NUESTRO CATÁLOGO</b><h2>Nuestros modelos de canastas</h2><p>Elige la opción ideal, indica cuántas unidades deseas de cada modelo y revisa tu pedido.</p><div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
 <button class="btn red" type="button" onclick="window.open('catalogo-macatex-navidad-2026.pdf','_blank','noopener')">📘 Ver catálogo PDF completo</button>
 <button class="btn green" id="openCart" type="button">🛒 Revisar mi pedido (<span id="cartCount">0</span>)</button>

@@ -1,0 +1,124 @@
+/**
+ * MACATEXPERU - Rifa Navideña 2026
+ * Agregar este archivo al proyecto de Apps Script que ya sirve el catálogo.
+ * Luego añadir en doGet(e), después de obtener "tipo":
+ * if (tipo === 'rifa') return salida(obtenerRifaPublica_(), e);
+ *
+ * La reserva se registra mediante POST desde un formulario HTML oculto (iframe).
+ * El listado público solo devuelve número y estado; nunca datos personales.
+ */
+const RIFA_CFG = {
+  HOJA: 'RIFA_2026',
+  TOTAL: 300,
+  PRECIO: 10,
+  MINUTOS_RESERVA: 30,
+  YAPE: '930523654'
+};
+
+function prepararRifaNavidena2026() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(RIFA_CFG.HOJA);
+  if (!sh) sh = ss.insertSheet(RIFA_CFG.HOJA);
+  const headers = ['Número', 'Estado', 'Nombre', 'WhatsApp', 'Fecha reserva', 'Reserva hasta', 'Fecha pago', 'Observaciones'];
+  if (sh.getLastRow() === 0) {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#1E3A8A').setFontColor('#FFFFFF');
+    sh.setFrozenRows(1);
+    const rows = Array.from({length: RIFA_CFG.TOTAL}, (_, i) => [String(i + 1).padStart(3, '0'), 'DISPONIBLE', '', '', '', '', '', '']);
+    sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+    sh.getRange(2, 1, rows.length, 1).setNumberFormat('@');
+    sh.autoResizeColumns(1, headers.length);
+  } else {
+    const current = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), headers.length)).getDisplayValues()[0];
+    if (headers.some((h, i) => current[i] !== h)) {
+      throw new Error('La hoja RIFA_2026 ya existe con encabezados diferentes. No se modificó para proteger los datos.');
+    }
+  }
+  SpreadsheetApp.getUi().alert('RIFA_2026 está lista. Revisa los 300 números del 001 al 300.');
+}
+
+/** Endpoint público JSONP: devuelve únicamente número y estado. */
+function obtenerRifaPublica_() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
+    if (!sh) throw new Error('Primero ejecuta prepararRifaNavidena2026().');
+    liberarReservasVencidas_(sh);
+    const values = sh.getDataRange().getValues();
+    return values.slice(1).filter(r => r[0]).map(r => ({
+      numero: String(r[0]).padStart(3, '0'),
+      estado: String(r[1] || 'DISPONIBLE').toUpperCase()
+    }));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Recibe un formulario POST; no se publican los datos del participante. */
+function doPost(e) {
+  try {
+    const p = (e && e.parameter) || {};
+    if (String(p.accion || '') !== 'reservar_rifa') {
+      return ContentService.createTextOutput('Solicitud no válida');
+    }
+    const numero = String(p.numero || '').trim();
+    const nombre = String(p.nombre || '').trim().slice(0, 100);
+    const whatsapp = String(p.whatsapp || '').replace(/[^0-9+]/g, '').slice(0, 20);
+    if (!/^\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) throw new Error('Número inválido.');
+    if (nombre.length < 2 || !/^\+?\d{9,15}$/.test(whatsapp)) throw new Error('Completa correctamente tu nombre y WhatsApp.');
+    const lock = LockService.getScriptLock();
+    lock.waitLock(10000);
+    try {
+      const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
+      if (!sh) throw new Error('La hoja de la rifa aún no está preparada.');
+      liberarReservasVencidas_(sh);
+      const last = sh.getLastRow();
+      const data = sh.getRange(2, 1, Math.max(last - 1, 1), 8).getValues();
+      const idx = data.findIndex(r => String(r[0]).padStart(3, '0') === numero);
+      if (idx < 0) throw new Error('No encontramos ese número.');
+      const row = data[idx];
+      if (String(row[1]).toUpperCase() !== 'DISPONIBLE') throw new Error('Ese número ya no está disponible.');
+      const now = new Date();
+      sh.getRange(idx + 2, 2, 1, 7).setValues([[
+        'RESERVADO', nombre, whatsapp, now,
+        new Date(now.getTime() + RIFA_CFG.MINUTOS_RESERVA * 60000), '', ''
+      ]]);
+      return ContentService.createTextOutput('Reserva registrada');
+    } finally {
+      lock.releaseLock();
+    }
+  } catch (err) {
+    return ContentService.createTextOutput('No se pudo reservar: ' + err.message);
+  }
+}
+
+/** Libera automáticamente reservas vencidas sin tocar números vendidos. */
+function liberarReservasVencidas_(sh) {
+  const last = sh.getLastRow();
+  if (last < 2) return;
+  const range = sh.getRange(2, 1, last - 1, 8);
+  const rows = range.getValues();
+  const now = new Date();
+  let changed = false;
+  rows.forEach(r => {
+    if (String(r[1]).toUpperCase() === 'RESERVADO' && r[5] instanceof Date && r[5].getTime() <= now.getTime()) {
+      r[1] = 'DISPONIBLE';
+      r[2] = ''; r[3] = ''; r[4] = ''; r[5] = ''; r[6] = '';
+      r[7] = 'Reserva vencida automáticamente';
+      changed = true;
+    }
+  });
+  if (changed) range.setValues(rows);
+}
+
+/** Ejecutar manualmente desde Apps Script para liberar vencidos y actualizar el listado. */
+function actualizarRifaNavidena2026() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
+  if (!sh) throw new Error('No existe la hoja RIFA_2026.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try { liberarReservasVencidas_(sh); }
+  finally { lock.releaseLock(); }
+  SpreadsheetApp.getUi().alert('Se revisaron las reservas vencidas.');
+}

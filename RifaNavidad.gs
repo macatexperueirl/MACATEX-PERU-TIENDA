@@ -55,20 +55,36 @@ function obtenerRifaPublica_() {
   }
 }
 
-/** Recibe un formulario POST; no se publican los datos del participante. */
+/** Devuelve el resultado del POST al sitio principal dentro del iframe. */
+function respuestaReservaRifa_(datos) {
+  const mensaje = JSON.stringify(datos).replace(/</g, '\\u003c');
+  const html = '<!doctype html><html><head><meta charset="utf-8"></head><body><script>' +
+    'parent.postMessage(' + mensaje + ', "https://macatexperueirl.github.io");' +
+    '<\\/script></body></html>';
+  return HtmlService.createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/** Recibe la reserva y comunica explícitamente si fue aceptada o rechazada. */
 function doPost(e) {
+  const p = (e && e.parameter) || {};
+  const requestId = String(p.requestId || '');
   try {
-    const p = (e && e.parameter) || {};
     if (String(p.accion || '') !== 'reservar_rifa') {
-      return ContentService.createTextOutput('Solicitud no válida');
+      throw new Error('Solicitud no válida.');
     }
     const numero = String(p.numero || '').trim();
     const nombre = String(p.nombre || '').trim().slice(0, 100);
     const whatsapp = String(p.whatsapp || '').replace(/[^0-9+]/g, '').slice(0, 20);
-    if (!/^\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) throw new Error('Número inválido.');
-    if (nombre.length < 2 || !/^\+?\d{9,15}$/.test(whatsapp)) throw new Error('Completa correctamente tu nombre y WhatsApp.');
+    if (!/^\\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) {
+      throw new Error('Número inválido.');
+    }
+    if (nombre.length < 2 || !/^\\+?\\d{9,15}$/.test(whatsapp)) {
+      throw new Error('Completa correctamente tu nombre y WhatsApp.');
+    }
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
+    let resultado;
     try {
       const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
       if (!sh) throw new Error('La hoja de la rifa aún no está preparada.');
@@ -77,19 +93,33 @@ function doPost(e) {
       const data = sh.getRange(2, 1, Math.max(last - 1, 1), 8).getValues();
       const idx = data.findIndex(r => String(r[0]).padStart(3, '0') === numero);
       if (idx < 0) throw new Error('No encontramos ese número.');
-      const row = data[idx];
-      if (String(row[1]).toUpperCase() !== 'DISPONIBLE') throw new Error('Ese número ya no está disponible.');
+      if (String(data[idx][1]).toUpperCase() !== 'DISPONIBLE') {
+        throw new Error('Ese número ya no está disponible. Elige otro.');
+      }
       const now = new Date();
-      sh.getRange(idx + 2, 2, 1, 7).setValues([[
-        'RESERVADO', nombre, whatsapp, now,
-        new Date(now.getTime() + RIFA_CFG.MINUTOS_RESERVA * 60000), '', ''
+      const expires = new Date(now.getTime() + RIFA_CFG.MINUTOS_RESERVA * 60000);
+      const row = idx + 2;
+      sh.getRange(row, 2, 1, 7).setValues([[
+        'RESERVADO', nombre, whatsapp, now, expires, '', ''
       ]]);
-      return ContentService.createTextOutput('Reserva registrada');
+      sh.getRange(row, 5, 1, 2).setNumberFormat('dd/MM/yyyy HH:mm:ss');
+      resultado = {
+        ok: true,
+        requestId: requestId,
+        numero: numero,
+        expiresAt: expires.toISOString(),
+        message: 'Reserva aceptada por 30 minutos.'
+      };
     } finally {
       lock.releaseLock();
     }
+    return respuestaReservaRifa_(resultado);
   } catch (err) {
-    return ContentService.createTextOutput('No se pudo reservar: ' + err.message);
+    return respuestaReservaRifa_({
+      ok: false,
+      requestId: requestId,
+      message: err && err.message ? err.message : 'No se pudo registrar la reserva.'
+    });
   }
 }
 

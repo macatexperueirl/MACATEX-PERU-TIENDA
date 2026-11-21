@@ -60,7 +60,7 @@ function respuestaReservaRifa_(datos) {
   const payload = Object.assign({ type: 'MACATEX_RIFA_RESULT' }, datos);\n  const mensaje = JSON.stringify(payload).replace(/</g, '\\u003c');
   const html = '<!doctype html><html><head><meta charset="utf-8"></head><body><script>' +
     'parent.postMessage(' + mensaje + ', "https://macatexperueirl.github.io");' +
-    '<\\/script></body></html>';
+    '<\/script></body></html>';
   return HtmlService.createHtmlOutput(html)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -76,10 +76,10 @@ function doPost(e) {
     const numero = String(p.numero || '').trim();
     const nombre = String(p.nombre || '').trim().slice(0, 100);
     const whatsapp = String(p.whatsapp || '').replace(/[^0-9+]/g, '').slice(0, 20);
-    if (!/^\\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) {
+    if (!/^\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) {
       throw new Error('Número inválido.');
     }
-    if (nombre.length < 2 || !/^\\+?\\d{9,15}$/.test(whatsapp)) {
+    if (nombre.length < 2 || !/^\+?\d{9,15}$/.test(whatsapp)) {
       throw new Error('Completa correctamente tu nombre y WhatsApp.');
     }
     const lock = LockService.getScriptLock();

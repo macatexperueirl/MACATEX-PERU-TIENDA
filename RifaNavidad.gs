@@ -122,3 +122,59 @@ function actualizarRifaNavidena2026() {
   finally { lock.releaseLock(); }
   SpreadsheetApp.getUi().alert('Se revisaron las reservas vencidas.');
 }
+
+
+/** Confirma manualmente el pago y marca un número como VENDIDO. */
+function confirmarNumeroRifa() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('MACATEX - Confirmar venta de rifa', 'Escribe el número de tres dígitos (001 al 300) cuyo Yape ya verificaste:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  const numero = r.getResponseText().trim();
+  if (!/^\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) {
+    ui.alert('Número inválido. Usa el formato 001 al 300.');
+    return;
+  }
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
+    if (!sh) throw new Error('No existe la hoja RIFA_2026.');
+    const values = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues();
+    const idx = values.findIndex(row => String(row[0]).padStart(3, '0') === numero);
+    if (idx < 0) throw new Error('No se encontró el número.');
+    if (String(values[idx][1]).toUpperCase() !== 'RESERVADO') throw new Error('El número no está reservado. Estado actual: ' + values[idx][1]);
+    const row = idx + 2;
+    sh.getRange(row, 2).setValue('VENDIDO');
+    sh.getRange(row, 7).setValue(new Date());
+    sh.getRange(row, 8).setValue('Pago Yape verificado manualmente');
+    ui.alert('Número ' + numero + ' marcado como VENDIDO.');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Liberación manual excepcional de un número reservado. */
+function liberarNumeroRifa() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('MACATEX - Liberar número', 'Escribe el número reservado de tres dígitos (001 al 300):', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  const numero = r.getResponseText().trim();
+  if (!/^\d{3}$/.test(numero) || Number(numero) < 1 || Number(numero) > RIFA_CFG.TOTAL) {
+    ui.alert('Número inválido. Usa el formato 001 al 300.');
+    return;
+  }
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RIFA_CFG.HOJA);
+    if (!sh) throw new Error('No existe la hoja RIFA_2026.');
+    const values = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues();
+    const idx = values.findIndex(row => String(row[0]).padStart(3, '0') === numero);
+    if (idx < 0) throw new Error('No se encontró el número.');
+    if (String(values[idx][1]).toUpperCase() !== 'RESERVADO') throw new Error('Solo se puede liberar un número RESERVADO.');
+    sh.getRange(idx + 2, 2, 1, 7).setValues([['DISPONIBLE', '', '', '', '', '', 'Liberado manualmente']]);
+    ui.alert('Número ' + numero + ' liberado.');
+  } finally {
+    lock.releaseLock();
+  }
+}

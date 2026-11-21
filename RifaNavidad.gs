@@ -57,7 +57,7 @@ function obtenerRifaPublica_() {
 
 /** Devuelve el resultado del POST al sitio principal dentro del iframe. */
 function respuestaReservaRifa_(datos) {
-  const mensaje = JSON.stringify(datos).replace(/</g, '\\u003c');
+  const payload = Object.assign({ type: 'MACATEX_RIFA_RESULT' }, datos);\n  const mensaje = JSON.stringify(payload).replace(/</g, '\\u003c');
   const html = '<!doctype html><html><head><meta charset="utf-8"></head><body><script>' +
     'parent.postMessage(' + mensaje + ', "https://macatexperueirl.github.io");' +
     '<\\/script></body></html>';

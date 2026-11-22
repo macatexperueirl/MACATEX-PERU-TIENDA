@@ -11,7 +11,7 @@ const RIFA_CFG = {
   HOJA: 'RIFA_2026',
   TOTAL: 300,
   PRECIO: 10,
-  MINUTOS_RESERVA: 30,
+  MINUTOS_RESERVA: 480,
   YAPE: '930523654'
 };
 
@@ -110,7 +110,7 @@ function doPost(e) {
         requestId: requestId,
         numero: numero,
         expiresAt: expires.toISOString(),
-        message: 'Reserva aceptada por 30 minutos.'
+        message: 'Reserva aceptada por 8 horas.'
       };
     } finally {
       lock.releaseLock();

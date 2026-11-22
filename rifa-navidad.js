@@ -59,7 +59,7 @@
     if (!iframe) return;
     // Apps Script HtmlService puede usar un iframe interno; en ese caso
     // event.source no coincide con el iframe externo del formulario.
-    const trustedAppsScriptOrigin = /(^|\\.)googleusercontent\\.com$|(^|\\.)script\\.google\\.com$/.test(event.origin || '');
+    const trustedAppsScriptOrigin = /(^|[.])googleusercontent[.]com$|(^|[.])script[.]google[.]com$/.test(new URL(event.origin).hostname);
     if (event.source !== iframe.contentWindow && !trustedAppsScriptOrigin) return;
     const data = event.data;
     if (!data || data.type !== 'MACATEX_RIFA_RESULT' || !pendingRequest) return;

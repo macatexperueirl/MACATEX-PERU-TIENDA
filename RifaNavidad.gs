@@ -60,7 +60,7 @@ function respuestaReservaRifa_(datos) {
   const payload = Object.assign({ type: 'MACATEX_RIFA_RESULT' }, datos);
   const mensaje = JSON.stringify(payload).replace(/</g, '\\u003c');
   const html = '<!doctype html><html><head><meta charset="utf-8"></head><body><script>' +
-    'parent.postMessage(' + mensaje + ', "https://macatexperueirl.github.io");' +
+    'window.top.postMessage(' + mensaje + ', "https://macatexperueirl.github.io");' +
     '</scr' + 'ipt></body></html>';
   return HtmlService.createHtmlOutput(html)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);

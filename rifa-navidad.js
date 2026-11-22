@@ -55,42 +55,6 @@
   let pendingRequest = null;
   let requestTimer = null;
 
-  window.addEventListener('message', event => {
-    if (!iframe) return;
-    // La respuesta puede llegar desde el iframe de Apps Script o desde su ventana superior.
-    // El requestId aleatorio pendiente identifica la solicitud exacta.
-    const data = event.data;
-    if (!data || data.type !== 'MACATEX_RIFA_RESULT' || !pendingRequest) return;
-    if (data.requestId !== pendingRequest.id) return;
-
-    clearTimeout(requestTimer);
-    const { id, number, name, phone, waWindow } = pendingRequest;
-    pendingRequest = null;
-    submitting = false;
-    const btn = document.getElementById('rifaSubmit');
-    btn.disabled = false;
-    btn.textContent = 'Solicitar reserva por S/10';
-
-    if (!data.ok) {
-      if (waWindow && !waWindow.closed) waWindow.close();
-      statusText.textContent = data.message || 'No se pudo confirmar la reserva. Actualiza los números e inténtalo nuevamente.';
-      refresh();
-      return;
-    }
-
-    const expiry = data.expiresAt ? new Date(data.expiresAt) : new Date(Date.now() + 30 * 60000);
-    const expiryText = expiry.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
-    statusText.textContent = '¡Reserva confirmada! Número ' + number + ' reservado hasta ' + expiryText + '. Ahora realiza el Yape de S/10 al ' + YAPE + ' y envía tu comprobante para validación.';
-    const msg = 'Hola, MACATEXPERU. Mi reserva del número ' + number + ' fue registrada. Nombre: ' + name + '. WhatsApp: ' + phone + '. Realizaré el Yape de S/10 al ' + YAPE + ' y enviaré el comprobante para validación. Mi reserva vence: ' + expiryText + '.';
-    if (waWindow && !waWindow.closed) {
-      waWindow.location.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
-    }
-    selected = '';
-    numberInput.value = '';
-    selectedLabel.textContent = 'Ninguno';
-    refresh();
-  });
-
   form.addEventListener('submit', e => {
     e.preventDefault();
     if (submitting || pendingRequest) return;
@@ -109,9 +73,8 @@
     }
 
     const id = 'rf' + Date.now() + Math.random().toString(36).slice(2, 8);
-    const waWindow = window.open('about:blank', '_blank');
     submitting = true;
-    pendingRequest = { id, number: selected, name, phone, waWindow };
+    pendingRequest = { id, number: selected, name, phone, startedAt: Date.now() };
     const btn = document.getElementById('rifaSubmit');
     btn.disabled = true;
     btn.textContent = 'Verificando disponibilidad…';
@@ -132,16 +95,51 @@
     postForm.submit();
     postForm.remove();
 
-    requestTimer = setTimeout(() => {
+    const checkReservation = async () => {
       if (!pendingRequest || pendingRequest.id !== id) return;
-      if (waWindow && !waWindow.closed) waWindow.close();
-      pendingRequest = null;
-      submitting = false;
-      btn.disabled = false;
-      btn.textContent = 'Solicitar reserva por S/10';
-      statusText.textContent = 'No recibimos confirmación del servidor. No realices el pago todavía. Actualiza los números y vuelve a intentarlo.';
-      refresh();
-    }, 20000);
+      try {
+        const latest = await jsonp();
+        const row = Array.isArray(latest) ? latest.find(x => String(x.numero).padStart(3, '0') === selected) : null;
+        if (row && String(row.estado).toUpperCase() === 'RESERVADO') {
+          clearInterval(requestTimer);
+          const reservedNumber = selected;
+          pendingRequest = null;
+          submitting = false;
+          btn.disabled = false;
+          btn.textContent = 'Solicitar reserva por S/10';
+          const expiry = new Date(Date.now() + 30 * 60000);
+          const expiryText = expiry.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+          statusText.textContent = '¡Reserva confirmada! Número ' + reservedNumber + ' reservado por 30 minutos. Envía tu comprobante de Yape de S/10 para validar el pago. ';
+          const msg = 'Hola, MACATEXPERU. Mi reserva del número ' + reservedNumber + ' fue registrada. Nombre: ' + name + '. WhatsApp: ' + phone + '. Realizaré el Yape de S/10 al ' + YAPE + ' y enviaré el comprobante para validación. Mi reserva vence: ' + expiryText + '.';
+          const link = document.createElement('a');
+          link.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = 'Abrir WhatsApp para enviar mi reserva';
+          link.className = 'btn green';
+          link.style.display = 'inline-block';
+          link.style.marginTop = '8px';
+          statusText.appendChild(document.createElement('br'));
+          statusText.appendChild(link);
+          selected = '';
+          numberInput.value = '';
+          selectedLabel.textContent = 'Ninguno';
+          refresh();
+          return;
+        }
+      } catch (_) {}
+      if (Date.now() - pendingRequest.startedAt >= 25000) {
+        clearInterval(requestTimer);
+        pendingRequest = null;
+        submitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Solicitar reserva por S/10';
+        statusText.textContent = 'No pudimos verificar la reserva. Revisa el estado del número en la página antes de volver a intentarlo y no realices el pago todavía.';
+        refresh();
+      }
+    };
+    requestTimer = setInterval(checkReservation, 1500);
+    setTimeout(checkReservation, 500);
   });
   document.getElementById('rifaRefresh').addEventListener('click',refresh);
   refresh();setInterval(refresh,15000);

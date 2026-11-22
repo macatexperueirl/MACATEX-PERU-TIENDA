@@ -56,7 +56,11 @@
   let requestTimer = null;
 
   window.addEventListener('message', event => {
-    if (!iframe || event.source !== iframe.contentWindow) return;
+    if (!iframe) return;
+    // Apps Script HtmlService puede usar un iframe interno; en ese caso
+    // event.source no coincide con el iframe externo del formulario.
+    const trustedAppsScriptOrigin = /(^|\\.)googleusercontent\\.com$|(^|\\.)script\\.google\\.com$/.test(event.origin || '');
+    if (event.source !== iframe.contentWindow && !trustedAppsScriptOrigin) return;
     const data = event.data;
     if (!data || data.type !== 'MACATEX_RIFA_RESULT' || !pendingRequest) return;
     if (data.requestId !== pendingRequest.id) return;

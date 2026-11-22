@@ -15,6 +15,7 @@
 
 const TICKET_RIFA_CFG = {
   HOJA: 'RIFA_2026',
+  WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL4hmtI1ZEerais9iQiG7cKMepm7rlxHhgDwG4c6QB1NmvHv5SqehLjbcg/exec',
   FOLDER_PROPERTY: 'MACATEX_RIFA_TICKETS_FOLDER_ID',
   HEADERS: ['Código verificación', 'Archivo PDF Drive']
 };
@@ -63,7 +64,7 @@ function generarTicketRifaManual() {
       }
     }
 
-    const verifyUrl = ScriptApp.getService().getUrl() + '?tipo=verificar_rifa&codigo=' + encodeURIComponent(codigo);
+    const verifyUrl = TICKET_RIFA_CFG.WEB_APP_URL + '?tipo=verificar_rifa&codigo=' + encodeURIComponent(codigo);
     const qrUrl = 'https://quickchart.io/qr?text=' + encodeURIComponent(verifyUrl) + '&size=260&margin=2&format=png';
     const qrResponse = UrlFetchApp.fetch(qrUrl, { muteHttpExceptions: true });
     if (qrResponse.getResponseCode() !== 200) throw new Error('No se pudo generar el QR. Intenta nuevamente.');

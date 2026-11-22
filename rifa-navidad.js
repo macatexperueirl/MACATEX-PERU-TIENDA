@@ -108,9 +108,9 @@
           submitting = false;
           btn.disabled = false;
           btn.textContent = 'Solicitar reserva por S/10';
-          const expiry = new Date(Date.now() + 30 * 60000);
+          const expiry = new Date(Date.now() + 8 * 60 * 60000);
           const expiryText = expiry.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
-          statusText.textContent = '¡Reserva confirmada! Número ' + reservedNumber + ' reservado por 30 minutos. Envía tu comprobante de Yape de S/10 para validar el pago. ';
+          statusText.textContent = '¡Reserva confirmada! Número ' + reservedNumber + ' reservado por 8 horas. Envía tu comprobante de Yape de S/10 para validar el pago. ';
           const msg = 'Hola, MACATEXPERU. Mi reserva del número ' + reservedNumber + ' fue registrada. Nombre: ' + name + '. WhatsApp: ' + phone + '. Realizaré el Yape de S/10 al ' + YAPE + ' y enviaré el comprobante para validación. Mi reserva vence: ' + expiryText + '.';
           const link = document.createElement('a');
           link.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);

@@ -74,7 +74,8 @@
 
     const id = 'rf' + Date.now() + Math.random().toString(36).slice(2, 8);
     submitting = true;
-    pendingRequest = { id, number: selected, name, phone, startedAt: Date.now() };
+    const requestedNumber = selected;
+    pendingRequest = { id, number: requestedNumber, name, phone, startedAt: Date.now() };
     const btn = document.getElementById('rifaSubmit');
     btn.disabled = true;
     btn.textContent = 'Verificando disponibilidad…';
@@ -85,7 +86,7 @@
     postForm.action = API;
     postForm.target = 'rifaPostFrame';
     postForm.style.display = 'none';
-    const payload = { accion: 'reservar_rifa', numero: selected, nombre: name, whatsapp: phone, requestId: id };
+    const payload = { accion: 'reservar_rifa', numero: requestedNumber, nombre: name, whatsapp: phone, requestId: id };
     Object.entries(payload).forEach(([key, value]) => {
       const input = document.createElement('input');
       input.type = 'hidden'; input.name = key; input.value = value;
@@ -99,10 +100,10 @@
       if (!pendingRequest || pendingRequest.id !== id) return;
       try {
         const latest = await jsonp();
-        const row = Array.isArray(latest) ? latest.find(x => String(x.numero).padStart(3, '0') === selected) : null;
+        const row = Array.isArray(latest) ? latest.find(x => String(x.numero).padStart(3, '0') === requestedNumber) : null;
         if (row && String(row.estado).toUpperCase() === 'RESERVADO') {
           clearInterval(requestTimer);
-          const reservedNumber = selected;
+          const reservedNumber = requestedNumber;
           pendingRequest = null;
           submitting = false;
           btn.disabled = false;

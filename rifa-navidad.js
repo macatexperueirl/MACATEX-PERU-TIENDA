@@ -43,7 +43,7 @@
     document.getElementById('rifaAvailable').textContent=counts.DISPONIBLE||0;
     document.getElementById('rifaReserved').textContent=counts.RESERVADO||0;
     document.getElementById('rifaSold').textContent=counts.VENDIDO||0;
-    if(selected && !numbers.some(x=>String(x.numero).padStart(3,'0')===selected && String(x.estado).toUpperCase()==='DISPONIBLE')){
+    if(selected && !submitting && !pendingRequest && !numbers.some(x=>String(x.numero).padStart(3,'0')===selected && String(x.estado).toUpperCase()==='DISPONIBLE')){
       selected=''; numberInput.value=''; selectedLabel.textContent='Ninguno'; statusText.textContent='El número seleccionado dejó de estar disponible. Elige otro.';
     }
   }
@@ -60,7 +60,7 @@
     // Apps Script HtmlService puede usar un iframe interno; en ese caso
     // event.source no coincide con el iframe externo del formulario.
     const trustedAppsScriptOrigin = /(^|[.])googleusercontent[.]com$|(^|[.])script[.]google[.]com$/.test(new URL(event.origin).hostname);
-    if (event.source !== iframe.contentWindow && !trustedAppsScriptOrigin) return;
+    if (event.source !== iframe.contentWindow && event.source !== window && !trustedAppsScriptOrigin) return;
     const data = event.data;
     if (!data || data.type !== 'MACATEX_RIFA_RESULT' || !pendingRequest) return;
     if (data.requestId !== pendingRequest.id) return;

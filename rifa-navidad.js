@@ -57,10 +57,8 @@
 
   window.addEventListener('message', event => {
     if (!iframe) return;
-    // Apps Script HtmlService puede usar un iframe interno; en ese caso
-    // event.source no coincide con el iframe externo del formulario.
-    const trustedAppsScriptOrigin = /(^|[.])googleusercontent[.]com$|(^|[.])script[.]google[.]com$/.test(new URL(event.origin).hostname);
-    if (event.source !== iframe.contentWindow && event.source !== window && !trustedAppsScriptOrigin) return;
+    // La respuesta puede llegar desde el iframe de Apps Script o desde su ventana superior.
+    // El requestId aleatorio pendiente identifica la solicitud exacta.
     const data = event.data;
     if (!data || data.type !== 'MACATEX_RIFA_RESULT' || !pendingRequest) return;
     if (data.requestId !== pendingRequest.id) return;

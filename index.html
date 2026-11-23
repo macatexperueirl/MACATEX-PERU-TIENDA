@@ -397,7 +397,8 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
   });}
   function loadDetails(code,box){
     box.innerHTML='<span class="detail-note">Consultando productos incluidos…</span>';
-    jsonp({tipo:'detalle',codigo:code},(err,data)=>{
+    const detailCode=(map[code]&&map[code].inventoryCode)||code;
+    jsonp({tipo:'detalle',codigo:detailCode},(err,data)=>{
       if(err||!Array.isArray(data)){box.innerHTML='<span class="detail-note">No pudimos consultar los productos en Google Sheets. Vuelve a pulsar “Ver productos incluidos” para intentar nuevamente.</span>';delete box.dataset.loaded;return;}
       if(!data.length){box.innerHTML='<span class="detail-note">Esta canasta todavía no tiene productos publicados en la hoja DETALLE_CANASTAS. Verifica el código y estado antes de ofrecerla.</span>';return;}
       box.innerHTML='<strong>Productos incluidos</strong><ul>'+data.map(p=>'<li>'+esc(p.nombre)+(p.marca?' · '+esc(p.marca):'')+(p.presentacion?' · '+esc(p.presentacion):'')+(p.cantidad?' — '+esc(p.cantidad)+' ud.':'')+'</li>').join('')+'</ul><span class="detail-note">El contenido está sujeto a disponibilidad. Cualquier sustitución se consultará previamente.</span>';

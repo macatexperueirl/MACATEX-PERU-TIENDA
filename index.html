@@ -84,7 +84,8 @@ body,button,input,select,textarea{font-family:Arial,Helvetica,sans-serif}
 .modal{border-radius:8px}
 @media(max-width:900px){.head{flex-wrap:wrap}.head .nav{order:3;width:100%;justify-content:center;flex-wrap:wrap}.premium-hero{min-height:540px}#catalogo .cards{gap:15px}#catalogo .card>img{height:270px;min-height:270px}}
 @media(max-width:650px){.top.premium-top{font-size:9px;letter-spacing:.7px}.head{justify-content:center;text-align:center}.head .nav{display:flex;gap:12px 17px;font-size:12px}.head>div{justify-content:center}.premium-hero{min-height:610px}.premium-hero-shade{background:linear-gradient(90deg,rgba(9,31,24,.91),rgba(9,31,24,.58))}.premium-hero-content{padding:65px 0 38px}.premium-hero h1{font-size:clamp(42px,12vw,58px)}.premium-hero p{font-size:15px}.premium-hero-proof{gap:11px;flex-direction:column;margin-top:35px}.catalogIntro{padding:55px 0 45px}#catalogo .cards{grid-template-columns:1fr;max-width:470px;margin:auto;gap:22px}#catalogo .card>img{height:310px;min-height:310px}#catalogo .content p{min-height:0}#empresas .cards{grid-template-columns:1fr}.custom{padding:24px}.cta h2{font-size:30px}}
-</style></head><body>
+</style><style id="macatex-catalog-cleanup">#catalogo .details-toggle{display:none!important}#catalogo .card .order{display:none!important}.product-sheet-products ul{padding-left:20px;line-height:1.8}.product-sheet-products li{margin:3px 0}</style>
+</head><body>
 <div class="top premium-top">✦ COLECCIÓN NAVIDEÑA 2026 &nbsp; · &nbsp; REGALOS QUE SE COMPARTEN &nbsp; · &nbsp; ATENCIÓN POR WHATSAPP</div>
 <header class="wrap head"><a class="logo" href="#inicio">🎁 MACATEX<small>PERÚ · REGALOS QUE COMPARTEN ALEGRÍA</small></a><nav class="nav"><a href="#inicio">Inicio</a><a href="#catalogo">Canastas</a><a href="#empresas">Empresas</a><a href="#preguntas">Preguntas frecuentes</a><a href="#contacto">Contacto</a></nav><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:12px">🟢 +51 939 843 420 · +51 930 523 654</b></div></header>
 <section class="hero premium-hero" id="inicio">
@@ -486,48 +487,47 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const money=n=>'S/ '+Number(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
  let current={canasta:'',inventory:'',name:''};
- function loadProducts(code){
-  el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>Consultando contenido…</p>';
-  const cb='macatexSheet_'+Math.random().toString(36).slice(2,10);
-  const script=document.createElement('script');let finished=false;
-  const clean=()=>{delete window[cb];script.remove()};
-  window[cb]=data=>{if(finished)return;finished=true;clean();
-   if(!Array.isArray(data)||!data.length){el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>El contenido se está validando. Consulta por WhatsApp.</p>';return;}
-   el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><ul>'+data.map(p=>'<li>'+esc(p.nombre)+(p.marca?' · '+esc(p.marca):'')+(p.presentacion?' · '+esc(p.presentacion):'')+(p.cantidad?' — '+esc(p.cantidad)+' ud.':'')+'</li>').join('')+'</ul>';
-  };
-  script.onerror=()=>{if(finished)return;finished=true;clean();el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>No pudimos cargar el contenido. Consulta por WhatsApp.</p>';};
-  script.src=API+'?'+new URLSearchParams({tipo:'detalle',codigo:code,callback:cb,t:Date.now()});
-  document.head.appendChild(script);
-  setTimeout(()=>{if(finished)return;finished=true;clean();el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>La consulta está demorando. Inténtalo nuevamente.</p>';},13000);
+ function loadProducts(code,card){
+  const box=card.querySelector('#details-'+CSS.escape(code));
+  const toggle=card.querySelector('.details-toggle');
+  const target=el('productSheetProducts');
+  target.innerHTML='<h3>Productos incluidos</h3><p>Consultando contenido…</p>';
+  if(!box||!toggle){target.innerHTML='<h3>Productos incluidos</h3><p>No se encontró el detalle asociado a esta canasta.</p>';return;}
+  // Reutiliza exactamente la consulta original del catálogo y su respuesta de Apps Script.
+  if(box.dataset.loaded!=='1') toggle.click();
+  const copy=()=>{if(box.dataset.loaded==='1'&&!box.innerText.includes('Consultando productos incluidos')){target.innerHTML='<h3>Productos incluidos</h3>'+box.innerHTML;return true;}return false;};
+  if(copy())return;
+  let tries=0;const timer=setInterval(()=>{tries++;if(copy()||tries>40){clearInterval(timer);if(tries>40)target.innerHTML='<h3>Productos incluidos</h3><p>No se pudo cargar el detalle. Vuelve a intentarlo en unos momentos.</p>'; }},250);
  }
  function open(button){
   const card=button.closest('.card');if(!card)return;
   const toggle=card.querySelector('.details-toggle');
   const canasta=toggle?.dataset.detailsFor||'';
-  const inventory=card.querySelector('[data-price-for]')?.dataset.priceFor||button.dataset.inventory||'';
+  const inventory=card.querySelector('[data-price-for]')?.dataset.priceFor||'';
   const title=card.querySelector('h3')?.textContent?.trim()||card.querySelector('.tag')?.textContent?.trim()||'Canasta MACATEX';
   const image=card.querySelector('img');
-  const description=card.querySelector('.content p')?.textContent?.trim()||'Canasta navideña MACATEX.';
-  const price=card.querySelector('[data-price-for]')?.textContent?.trim()||'Precio por confirmar';
+  const priceEl=card.querySelector('[data-price-for]');
+  const priceText=priceEl?.textContent?.trim()||'Precio por confirmar';
   const stock=card.querySelector('[data-stock-for]')?.textContent?.trim()||'Disponibilidad por confirmar';
   current={canasta,inventory,name:title};
   el('productSheetTitle').textContent=title;
-  el('productSheetDescription').textContent=description;
-  el('productSheetPrice').textContent=price;
+  el('productSheetDescription').textContent=card.querySelector('.content p')?.textContent?.trim()||'Canasta navideña MACATEX.';
+  el('productSheetPrice').textContent=priceText;
   el('productSheetStock').textContent=stock;
   el('productSheetImage').src=image?.src||'';
   el('productSheetImage').alt=title;
-  const msg='¡Hola, MACATEX PERÚ! Quisiera cotizar '+title+' ('+canasta+'). Por favor, confirmen precio, contenido y disponibilidad.';
+  const msg='¡Hola, MACATEX PERÚ! Quiero comprar '+title+' ('+canasta+'). Confirmen disponibilidad, contenido, precio final y medios de pago.';
   el('productSheetQuote').href='https://wa.me/51939843420?text='+encodeURIComponent(msg);
   el('productSheetCart').dataset.code=inventory;
   back.classList.add('open');back.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
-  loadProducts(canasta);
+  loadProducts(canasta,card);
  }
  function addButtons(){
   document.querySelectorAll('#catalogo .card').forEach(card=>{
+   card.querySelectorAll('.order').forEach(order=>order.remove());
    if(card.querySelector('.product-sheet-open'))return;
    const content=card.querySelector('.content');if(!content)return;
-   const b=document.createElement('button');b.type='button';b.className='btn product-sheet-open';b.textContent='VER FICHA DEL PRODUCTO';
+   const b=document.createElement('button');b.type='button';b.className='btn product-sheet-open';b.textContent='VER FICHA Y COMPRAR';
    content.appendChild(b);
   });
  }

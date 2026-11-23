@@ -402,7 +402,7 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
     const btn=e.target.closest('button.details-toggle');if(!btn)return;
     const code=btn.dataset.detailsFor;const box=document.getElementById('details-'+code);if(!box)return;
     const opening=box.hidden;box.hidden=!opening;btn.setAttribute('aria-expanded',String(opening));btn.textContent=opening?'Ocultar productos ↑':'Ver productos incluidos ↓';
-    if(opening&&!box.dataset.loaded){const inventoryCode=(map[code]&&map[code].inventoryCode)||code;loadDetails(inventoryCode,box);box.dataset.loaded='1';}
+    if(opening&&!box.dataset.loaded){loadDetails(code,box);box.dataset.loaded='1';}
   });
   loadCanastas();setInterval(loadCanastas,60000);
 })();
@@ -433,4 +433,113 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
  #floatingCart .floating-cart-cta{font-size:13px;padding:9px 10px;background:#e7c98c;color:#173e32}
  #floatingCart .floating-cart-cta:after{content:none}
 }
-</style></body></html>
+</style>
+<style id="macatex-product-sheet-styles">
+.product-sheet-back{display:none;position:fixed;inset:0;z-index:9999;background:rgba(12,25,19,.76);padding:18px;overflow:auto;align-items:center;justify-content:center}
+.product-sheet-back.open{display:flex}
+.product-sheet{width:min(920px,100%);max-height:94vh;overflow:auto;background:#fffdf8;border-radius:12px;box-shadow:0 24px 80px #0005;position:relative}
+.product-sheet-close{position:sticky;top:10px;float:right;margin:10px 10px 0 0;z-index:2;border:0;border-radius:50%;width:42px;height:42px;background:#173e32;color:#fff;font-size:25px;cursor:pointer}
+.product-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:28px}
+.product-sheet-photo{width:100%;height:420px;object-fit:contain;background:#f5f0e7;border-radius:8px}
+.product-sheet-info{padding:18px 8px 18px 0}
+.product-sheet-kicker{color:#b58a43;font-size:11px;letter-spacing:2px;font-weight:800}
+.product-sheet-info h2{font:500 clamp(28px,4vw,40px) Georgia,serif;color:#173e32;margin:12px 0}
+.product-sheet-description{color:#686258;line-height:1.7}
+.product-sheet-price{font-size:30px;color:#a9152b;font-weight:800;margin:18px 0 5px}
+.product-sheet-stock{font-size:13px;color:#315b43;font-weight:700;margin:8px 0 18px}
+.product-sheet-products{border-top:1px solid #e8dfd2;padding-top:16px;margin-top:16px}
+.product-sheet-products h3{font:500 22px Georgia,serif;color:#173e32}
+.product-sheet-products ul{padding-left:20px;line-height:1.8;color:#4d4a43}
+.product-sheet-note{font-size:12px;color:#777;line-height:1.5}
+.product-sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.product-sheet-actions .btn{flex:1;text-align:center;min-width:180px}
+.product-sheet-open{width:100%;margin-top:10px;background:#173e32;color:#fff}
+@media(max-width:680px){.product-sheet-back{padding:8px}.product-sheet-grid{grid-template-columns:1fr;gap:12px;padding:18px}.product-sheet-photo{height:280px}.product-sheet-info{padding:0}.product-sheet-close{position:absolute;top:8px;right:8px;margin:0}.product-sheet-actions{flex-direction:column}.product-sheet-actions .btn{width:100%}}
+</style>
+<div class="product-sheet-back" id="productSheetBack" aria-hidden="true">
+ <section class="product-sheet" role="dialog" aria-modal="true" aria-labelledby="productSheetTitle">
+  <button class="product-sheet-close" id="productSheetClose" type="button" aria-label="Cerrar">×</button>
+  <div class="product-sheet-grid">
+   <div><img class="product-sheet-photo" id="productSheetImage" alt=""></div>
+   <div class="product-sheet-info">
+    <span class="product-sheet-kicker">COLECCIÓN NAVIDEÑA MACATEX 2026</span>
+    <h2 id="productSheetTitle">Detalle de la canasta</h2>
+    <p class="product-sheet-description" id="productSheetDescription"></p>
+    <div class="product-sheet-price" id="productSheetPrice">Consultando precio…</div>
+    <div class="product-sheet-stock" id="productSheetStock">Consultando disponibilidad…</div>
+    <div class="product-sheet-products" id="productSheetProducts"><h3>Productos incluidos</h3><p>Consultando contenido…</p></div>
+    <p class="product-sheet-note">El contenido y la disponibilidad están sujetos a confirmación antes de realizar el pedido.</p>
+    <div class="product-sheet-actions">
+     <a class="btn red" id="productSheetQuote" target="_blank" rel="noopener">COTIZAR PRODUCTO POR WHATSAPP</a>
+     <button class="btn green" id="productSheetCart" type="button">Agregar al carrito</button>
+    </div>
+   </div>
+  </div>
+ </section>
+</div>
+<script id="macatex-product-sheet">
+(function(){
+ const API='https://script.google.com/macros/s/AKfycbzqc-adBTSJiL4hmtI1ZEerais9iQiG7cKMepm7rlxHhgDwG4c6QB1NmvHv5SqehLjbcg/exec';
+ const back=document.getElementById('productSheetBack');
+ if(!back)return;
+ const el=id=>document.getElementById(id);
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const money=n=>'S/ '+Number(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+ let current={canasta:'',inventory:'',name:''};
+ function loadProducts(code){
+  el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>Consultando contenido…</p>';
+  const cb='macatexSheet_'+Math.random().toString(36).slice(2,10);
+  const script=document.createElement('script');let finished=false;
+  const clean=()=>{delete window[cb];script.remove()};
+  window[cb]=data=>{if(finished)return;finished=true;clean();
+   if(!Array.isArray(data)||!data.length){el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>El contenido se está validando. Consulta por WhatsApp.</p>';return;}
+   el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><ul>'+data.map(p=>'<li>'+esc(p.nombre)+(p.marca?' · '+esc(p.marca):'')+(p.presentacion?' · '+esc(p.presentacion):'')+(p.cantidad?' — '+esc(p.cantidad)+' ud.':'')+'</li>').join('')+'</ul>';
+  };
+  script.onerror=()=>{if(finished)return;finished=true;clean();el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>No pudimos cargar el contenido. Consulta por WhatsApp.</p>';};
+  script.src=API+'?'+new URLSearchParams({tipo:'detalle',codigo:code,callback:cb,t:Date.now()});
+  document.head.appendChild(script);
+  setTimeout(()=>{if(finished)return;finished=true;clean();el('productSheetProducts').innerHTML='<h3>Productos incluidos</h3><p>La consulta está demorando. Inténtalo nuevamente.</p>';},13000);
+ }
+ function open(button){
+  const card=button.closest('.card');if(!card)return;
+  const toggle=card.querySelector('.details-toggle');
+  const canasta=toggle?.dataset.detailsFor||'';
+  const inventory=card.querySelector('[data-price-for]')?.dataset.priceFor||button.dataset.inventory||'';
+  const title=card.querySelector('h3')?.textContent?.trim()||card.querySelector('.tag')?.textContent?.trim()||'Canasta MACATEX';
+  const image=card.querySelector('img');
+  const description=card.querySelector('.content p')?.textContent?.trim()||'Canasta navideña MACATEX.';
+  const price=card.querySelector('[data-price-for]')?.textContent?.trim()||'Precio por confirmar';
+  const stock=card.querySelector('[data-stock-for]')?.textContent?.trim()||'Disponibilidad por confirmar';
+  current={canasta,inventory,name:title};
+  el('productSheetTitle').textContent=title;
+  el('productSheetDescription').textContent=description;
+  el('productSheetPrice').textContent=price;
+  el('productSheetStock').textContent=stock;
+  el('productSheetImage').src=image?.src||'';
+  el('productSheetImage').alt=title;
+  const msg='¡Hola, MACATEX PERÚ! Quisiera cotizar '+title+' ('+canasta+'). Por favor, confirmen precio, contenido y disponibilidad.';
+  el('productSheetQuote').href='https://wa.me/51939843420?text='+encodeURIComponent(msg);
+  el('productSheetCart').dataset.code=inventory;
+  back.classList.add('open');back.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+  loadProducts(canasta);
+ }
+ function addButtons(){
+  document.querySelectorAll('#catalogo .card').forEach(card=>{
+   if(card.querySelector('.product-sheet-open'))return;
+   const content=card.querySelector('.content');if(!content)return;
+   const b=document.createElement('button');b.type='button';b.className='btn product-sheet-open';b.textContent='VER FICHA DEL PRODUCTO';
+   content.appendChild(b);
+  });
+ }
+ function close(){back.classList.remove('open');back.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+ document.addEventListener('click',e=>{const b=e.target.closest('.product-sheet-open');if(b){open(b);return;}});
+ el('productSheetClose').addEventListener('click',close);
+ back.addEventListener('click',e=>{if(e.target===back)close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&back.classList.contains('open'))close()});
+ el('productSheetCart').addEventListener('click',()=>{const code=current.inventory;const add=document.querySelector('.add-to-cart[data-code="'+CSS.escape(code)+'"]');if(add&&!add.disabled){add.click();close();}else{alert('La disponibilidad debe confirmarse antes de agregar esta canasta al carrito. Puedes cotizarla por WhatsApp.');}});
+ addButtons();
+ new MutationObserver(addButtons).observe(document.querySelector('#catalogo .cards')||document.body,{childList:true,subtree:true});
+})();
+</script>
+
+</body></html>

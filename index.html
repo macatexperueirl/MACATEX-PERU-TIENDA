@@ -417,7 +417,7 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
     }
     // Actualiza el catálogo del carrito existente para que use el precio vivo, no el valor escrito en HTML.
     if(window.macatexSetLivePrice)window.macatexSetLivePrice(ui.inventoryCode,c.precioVigente,c.nombre||ui.fallbackName);
-    if(c.imagen){const card=price&&price.closest('.card');const img=card&&card.querySelector('img');if(img&&c.imagen!==img.getAttribute('src'))img.src=c.imagen;}
+    if(c.imagen&&!['CAN-001','CAN-002','CAN-003'].includes(c.codigoCanasta)){const card=price&&price.closest('.card');const img=card&&card.querySelector('img');if(img&&c.imagen!==img.getAttribute('src'))img.src=c.imagen;}
   }
   function loadCanastas(){jsonp({tipo:'canastas'},(err,data)=>{
     const cards=document.querySelector('#catalogo .cards');

@@ -275,12 +275,12 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
  document.addEventListener('click',function(e){const b=e.target.closest('button.add-to-cart');if(!b)return;e.preventDefault();add(b.dataset.code);});
  const openCartPanel=()=>{$('cartBack').classList.add('open');render()}; $('openCart').addEventListener('click',openCartPanel); $('floatingCart').addEventListener('click',openCartPanel);$('closeCart').addEventListener('click',()=>$('cartBack').classList.remove('open'));$('cartBack').addEventListener('click',e=>{if(e.target===$('cartBack'))$('cartBack').classList.remove('open')});
  $('cartItems').addEventListener('click',e=>{const b=e.target.closest('button[data-cart-action]');if(!b)return;const {code,cartAction}=b.dataset; if(cartAction==='remove')delete cart[code];else if(cartAction==='minus'){if(cart[code])cart[code].qty--;if(cart[code]&&cart[code].qty<=0)delete cart[code];}else if(cartAction==='plus'){add(code);return;}render();});
- $('checkoutCart').addEventListener('click',()=>{
+ $('checkoutCart').addEventListener('click',async()=>{
    const rows=Object.entries(cart).filter(([k,v])=>v.qty>0);
    if(!rows.length){alert('Agrega al menos una canasta al carrito.');return;}
    const name=$('buyerName').value.trim(),phone=$('buyerPhone').value.trim(),city=$('buyerCity').value.trim();
    if(!name||!phone||!city){alert('Completa tu nombre, teléfono y distrito/ciudad de entrega.');return;}
-   const total=rows.reduce((sum,[code,item])=>sum+item.qty*item.price,0);
+   const total=Math.round(rows.reduce((sum,[code,item])=>sum+item.qty*item.price,0)*100)/100;
    const advance=Math.round(total*50)/100;
    const balance=Math.round((total-advance)*100)/100;
    const orderId='MAC-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
@@ -290,7 +290,28 @@ const MACATEX_STOCK_API = 'https://script.google.com/macros/s/AKfycbzqc-adBTSJiL
    if($('buyerDate').value)msg+='\nFecha deseada: '+$('buyerDate').value;
    if($('buyerNotes').value.trim())msg+='\nObservaciones: '+$('buyerNotes').value.trim();
    msg+='\n\nSolicito confirmar disponibilidad de insumos, precio final, entrega y datos para realizar el adelanto. Entiendo que el pedido NO queda confirmado hasta que MACATEX verifique el adelanto del 50%.';
-   window.open('https://wa.me/51939843420?text='+encodeURIComponent(msg),'_blank','noopener');
+
+   const payload={
+     pedidoId:orderId, cliente:name, whatsapp:phone, ciudad:city,
+     fechaEntrega:$('buyerDate').value, observaciones:$('buyerNotes').value.trim(),
+     items:rows.map(([code,item])=>({codigo:code,nombre:item.name,cantidad:item.qty,precioUnitario:item.price}))
+   };
+   const waWindow=window.open('about:blank','_blank');
+   const button=$('checkoutCart');button.disabled=true;button.textContent='Registrando solicitud...';
+   try{
+     const response=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+     if(!response.ok)throw new Error('El servidor no confirmó el registro (HTTP '+response.status+').');
+     const result=await response.json();
+     if(!result || !result.ok)throw new Error(result&&result.error?result.error:'No se pudo confirmar el registro.');
+     if(waWindow){waWindow.location.href='https://wa.me/51939843420?text='+encodeURIComponent(msg);}
+     else{window.location.href='https://wa.me/51939843420?text='+encodeURIComponent(msg);}
+     toast('Solicitud '+orderId+' registrada correctamente.');
+   }catch(err){
+     if(waWindow)waWindow.close();
+     alert('No pudimos confirmar el registro de tu solicitud en Google Sheets. No se ha enviado a WhatsApp. Intenta nuevamente o comunícate con MACATEX. Detalle: '+err.message);
+   }finally{
+     button.disabled=false;button.textContent='Enviar pedido por WhatsApp →';
+   }
  });
  window.macatexRefreshStock=function(){const cb='macatexCartStockCallback';window[cb]=function(data){try{if(!Array.isArray(data))throw new Error('Respuesta inválida');stockByCode={};data.forEach(p=>{const code=String(p['Código']||p['Codigo']||'').trim();if(code)stockByCode[code]=p;});stockLoaded=true;document.querySelectorAll('.add-to-cart').forEach(b=>{const code=b.dataset.code;const st=statusName(code);const av=available(code);if(!canAdd(code)){b.disabled=true;b.textContent=st==='En reposición'?'Consultar próxima disponibilidad':st==='Agotado'?'Agotado · consultar reposición':'No disponible por ahora';b.style.opacity='.65';}
         else{b.disabled=false;b.textContent='🛒 Agregar al carrito';b.style.opacity='1';}const card=b.closest('.card');const badge=card&&card.querySelector('[data-stock-for]');if(badge){badge.textContent=st||'Disponibilidad por confirmar';badge.className='stock-status '+(st==='Disponible'?'available':st==='Últimas unidades'?'low':st==='Agotado'?'soldout':st==='En reposición'?'restock':'paused');}});render();}catch(err){stockLoaded=false;console.warn('Inventario carrito:',err);}delete window[cb];};const sc=document.createElement('script');sc.src=API+'?callback='+cb+'&t='+Date.now();sc.onerror=()=>{stockLoaded=false;document.querySelectorAll('.add-to-cart').forEach(b=>{b.disabled=true;b.textContent='Inventario no disponible';});delete window[cb];};document.head.appendChild(sc);};
